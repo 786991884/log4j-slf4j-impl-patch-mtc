@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.logging.log4j</groupId>
   <artifactId>log4j-slf4j-impl</artifactId>
-  <version>2.3</version>
+  <version>2.3-patch-4-mtc</version>
   <packaging>jar</packaging>
   <name>Apache Log4j SLF4J Binding</name>
   <description>The Apache Log4j SLF4J API binding to Log4j 2 Core</description>
