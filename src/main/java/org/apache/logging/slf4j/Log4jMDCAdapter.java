@@ -16,6 +16,9 @@
  */
 package org.apache.logging.slf4j;
 
+import com.alibaba.mtc.MtContextThreadLocal;
+
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.ThreadContext;
@@ -25,10 +28,31 @@ import org.slf4j.spi.MDCAdapter;
  *
  */
 public class Log4jMDCAdapter implements MDCAdapter {
+    MtContextThreadLocal<Map<String, String>> log4j2Context = new MtContextThreadLocal<Map<String, String>>() {
+        @Override
+        protected void beforeExecute() {
+            final Map<String, String> log4j2Context = get();
+            for (Map.Entry<String, String> entry : log4j2Context.entrySet()) {
+                ThreadContext.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        @Override
+        protected void afterExecute() {
+            ThreadContext.clearAll();
+        }
+
+        @Override
+        protected Map<String, String> initialValue() {
+            return new HashMap<String, String>();
+        }
+    };
 
     @Override
     public void put(final String key, final String val) {
         ThreadContext.put(key, val);
+
+        log4j2Context.get().put(key, val);
     }
 
     @Override
@@ -39,11 +63,15 @@ public class Log4jMDCAdapter implements MDCAdapter {
     @Override
     public void remove(final String key) {
         ThreadContext.remove(key);
+
+        log4j2Context.get().remove(key);
     }
 
     @Override
     public void clear() {
         ThreadContext.clearMap();
+
+        log4j2Context.get().clear();
     }
 
     @Override
@@ -57,6 +85,8 @@ public class Log4jMDCAdapter implements MDCAdapter {
         ThreadContext.clearMap();
         for (final Map.Entry<String, String> entry : ((Map<String, String>) map).entrySet()) {
             ThreadContext.put(entry.getKey(), entry.getValue());
+
+            log4j2Context.get().put(entry.getKey(), entry.getValue());
         }
     }
 }
